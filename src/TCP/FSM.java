@@ -7,25 +7,25 @@ import java.io.IOException;
  *
  */
 public abstract class FSM implements Runnable {
-	/**
-	 *	Current state 
-	 */
-	private int myState = 0;
-	/**
-	 * Repeated called by run with current state
-	 * @param myState	current state
-	 * @return			next state
-	 * @throws IOException	from i/o actions
-	 */
-	public abstract int loop(int myState) throws IOException;
-	/**
-	 * Used by thread to repeatedly call loop
-	 */
-	public void run() {
-		try {
-			for (;;) myState = loop(myState);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     *	Current state 
+     */
+    private int myState = 0;
+    /**
+     * Repeated called by run with current state
+     * @param myState	current state
+     * @return			next state
+     * @throws IOException	from i/o actions
+     */
+    public abstract int loop(int myState) throws IOException;
+    /**
+     * Used by thread to repeatedly call loop
+     */
+    public void run() {
+        try {
+            for (;;) myState = loop(myState);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

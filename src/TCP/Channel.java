@@ -6,20 +6,20 @@ import java.io.IOException;
  *
  */
 public interface Channel extends Runnable {
-	/**
-	 * Send for a String
-	 * @param s	String to be sent
-	 */
-	void send(String s);
-	/**
-	 * Send for a PacketType. Channel serializes the packet before sending it.
-	 * @param packet	Packet to be sent
-	 */
-	void send(PacketType packet);
-	/**
-	 * Receiver for sent data
-	 * @return	data sent by send method.
-	 * @throws IOException	from internal pipe
-	 */
-	String receive() throws IOException;
+    /**
+     * Send for a String
+     * @param s	String to be sent
+     */
+    void send(String s);
+    /**
+     * Send for a PacketType. Channel serializes the packet before sending it.
+     * @param packet	Packet to be sent
+     */
+    void send(PacketType packet);
+    /**
+     * Receiver for sent data
+     * @return	data sent by send method.
+     * @throws IOException	from internal pipe
+     */
+    String receive() throws IOException;
 }
