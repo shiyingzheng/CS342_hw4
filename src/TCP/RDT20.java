@@ -47,6 +47,9 @@ public class RDT20 extends RTDBase {
             String dat = data.substring(4);
             return new Packet(dat, hex);
         }
+        public boolean isAck() {
+            return data.equals("ACK");
+        }
     }
 
     /**
@@ -61,11 +64,22 @@ public class RDT20 extends RTDBase {
                 switch(myState) {
                     case 0:
                         String dat = getFromApp(0);
-                        Packet p = new Packet(dat)
-                        System.out.printf("Sender(0): %s\n", p.toString());
-                        forward.send(p);
+                        packet = new Packet(dat);
+                        System.out.printf("Sender(0): %s\n", packet.toString());
+                        System.out.println("  **Sender(0->1):");
+                        forward.send(packet);
+                        return 1;
                     case 1:
-                        //other stuff
+                        String acknak = backward.receive();
+                        Packet pack = Packet.deserialize(acknak);
+                        System.out.printf("  **Sender(1): %s ***\n", pack.toString());
+                        if (!pack.isAck()) {
+                            System.out.println("  **Sender(1->1): NAK or corrupt acknowledgement; resending ***");
+                            forward.send(packet);
+                            return 1;
+                        }
+                        System.out.println("  **Sender(1->0)");
+                        return 0;
                 }
                 return myState;			
             }
