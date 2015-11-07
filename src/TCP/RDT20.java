@@ -59,7 +59,13 @@ public class RDT20 extends RTDBase {
         @Override
             public int loop(int myState) throws IOException {
                 switch(myState) {
-                    // Your code here
+                    case 0:
+                        String dat = getFromApp(0);
+                        Packet p = new Packet(dat)
+                        System.out.printf("Sender(0): %s\n", p.toString());
+                        forward.send(p);
+                    case 1:
+                        //other stuff
                 }
                 return myState;			
             }
@@ -74,7 +80,10 @@ public class RDT20 extends RTDBase {
         @Override
             public int loop(int myState) throws IOException {
                 switch (myState) {
-                    // Your code here
+                    case 0:
+                        //stuff
+                    case 1:
+                        //other stuff
                 }
                 return myState;
             }
