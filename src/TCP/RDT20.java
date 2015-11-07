@@ -96,12 +96,15 @@ public class RDT20 extends RTDBase {
                 switch (myState) {
                     case 0:
                         String dat = forward.receive();
+                        System.out.printf("         **Receiver(0): %s ***\n", pack.toString());
                         Packet packet = Packet.deserialize(dat);
                         if (packet.isCorrupt()){
+                        	System.out.println("  **Receiver(0->0): corrupt data; replying NAK **");
                         	Packet p = new Packet("NAK");
                         	backward.send(p);
                         }
                         else {
+                        	System.out.println("  **Receiver(0->0): ok data; replying ACK **");
 							deliverToApp(packet.data);
                         	Packet p = new Packet("ACK");
                         	backward.send(p);
