@@ -3,7 +3,7 @@ import java.io.IOException;
 
 /**
  * Implements simulator using rdt2.0 protocol
- * 
+ *
  * @author rms
  *
  */
@@ -81,7 +81,7 @@ public class RDT20 extends RTDBase {
                         System.out.println("  **Sender(1->0)");
                         return 0;
                 }
-                return myState;			
+                return myState;
             }
     }
 
@@ -95,9 +95,18 @@ public class RDT20 extends RTDBase {
             public int loop(int myState) throws IOException {
                 switch (myState) {
                     case 0:
-                        //stuff
-                    case 1:
-                        //other stuff
+                        String dat = forward.receive();
+                        Packet packet = Packet.deserialize(dat);
+                        if (packet.isCorrupt()){
+                        	Packet p = new Packet("NAK");
+                        	backward.send(p);
+                        }
+                        else {
+							deliverToApp(packet.data);
+                        	Packet p = new Packet("ACK");
+                        	backward.send(p);
+                        }
+                        return 0;
                 }
                 return myState;
             }
