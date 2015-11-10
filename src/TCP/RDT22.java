@@ -51,6 +51,15 @@ public class RDT22 extends RTDBase {
             String dat = data.substring(5);
             return new Packet(dat, seqnum, hex);
         }
+        public int ackNum() {
+            if (!data.equals("ACK")) {
+                return -1;
+            }
+            if (seqnum.equals("0")) {
+                return 0;
+            }
+            return 1;
+        }
     }
 
     /**
@@ -62,8 +71,46 @@ public class RDT22 extends RTDBase {
         Packet packet = null;
         @Override
             public int loop(int myState) throws IOException {
+                Packet pack = null;
+                String acknak = null;
+                String dat = null;
                 switch(myState) {
-                    // Your code here
+                    case 0:
+                        dat = getFromApp(0);
+                        packet = new Packet(dat, "0");
+                        System.out.printf("Sender(0): %s\n", packet.toString());
+                        System.out.println("  **Sender(0->1):");
+                        forward.send(packet);
+                        return 1;
+                    case 1:
+                        acknak = backward.receive();
+                        pack = Packet.deserialize(acknak);
+                        System.out.printf("  **Sender(1): %s ***\n", pack.toString());
+                        if (pack.ackNum() == -1 || pack.ackNum() == 1 || pack.isCorrupt()) {
+                            System.out.println("  **Sender(1->1): wrong or corrupt acknowledgement; resending ***");
+                            forward.send(packet);
+                            return 1;
+                        }
+                        System.out.println("  **Sender(1->2)");
+                        return 2;
+                    case 2:
+                        dat = getFromApp(0);
+                        packet = new Packet(dat, "1");
+                        System.out.printf("Sender(2): %s\n", packet.toString());
+                        System.out.println("  **Sender(2->3):");
+                        forward.send(packet);
+                        return 3;
+                    case 3:
+                        acknak = backward.receive();
+                        pack = Packet.deserialize(acknak);
+                        System.out.printf("  **Sender(3): %s ***\n", pack.toString());
+                        if (pack.ackNum() == -1 || pack.ackNum() == 0 || pack.isCorrupt()) {
+                            System.out.println("  **Sender(3->3): wrong or corrupt acknowledgement; resending ***");
+                            forward.send(packet);
+                            return 3;
+                        }
+                        System.out.println("  **Sender(3->0)");
+                        return 0;
                 }
                 return myState;
             }
@@ -77,8 +124,40 @@ public class RDT22 extends RTDBase {
     public class RReceiver22 extends RReceiver {
         @Override
             public int loop(int myState) throws IOException {
+                String dat = null;
+                Packet packet = null;
+                Packet p = null;
                 switch (myState) {
-                    // Your code here
+                    case 0:
+                        dat = forward.receive();
+                        packet = Packet.deserialize(dat);
+                        System.out.printf("         **Receiver(0): %s ***\n", packet.toString());
+                        if (packet.isCorrupt()){
+                        	System.out.println("         **Receiver(0->0): corrupt data; replying ACK/1 **");
+                        	p = new Packet("ACK", "1");
+                        	backward.send(p);
+                            return 0;
+                        }
+                        System.out.println("         **Receiver(0->1): ok data; replying ACK **");
+                        deliverToApp(packet.data);
+                        p = new Packet("ACK", "0");
+                        backward.send(p);
+                        return 1;
+                    case 1:
+                        dat = forward.receive();
+                        packet = Packet.deserialize(dat);
+                        System.out.printf("         **Receiver(1): %s ***\n", packet.toString());
+                        if (packet.isCorrupt()){
+                        	System.out.println("         **Receiver(1->1): corrupt data; replying ACK/0 **");
+                        	p = new Packet("ACK", "0");
+                        	backward.send(p);
+                            return 1;
+                        }
+                        System.out.println("         **Receiver(1->0): ok data; replying ACK **");
+                        deliverToApp(packet.data);
+                        p = new Packet("ACK", "1");
+                        backward.send(p);
+                        return 0;
                 }
                 return myState;
             }
