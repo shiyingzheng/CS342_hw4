@@ -138,7 +138,13 @@ public class RDT22 extends RTDBase {
                         	backward.send(p);
                             return 0;
                         }
-                        System.out.println("         **Receiver(0->1): ok data; replying ACK **");
+                        if (packet.seqnum.equals("1")) {
+                            System.out.println("         **Receiver(0->0): Duplicate 1 packet; discarding; replying ACK/1 **");
+                            p = new Packet("ACK", "1");
+                            backward.send(p);
+                            return 0;
+                        }
+                        System.out.println("         **Receiver(0->1): ok 0 data; replying ACK/0 **");
                         deliverToApp(packet.data);
                         p = new Packet("ACK", "0");
                         backward.send(p);
@@ -153,7 +159,13 @@ public class RDT22 extends RTDBase {
                         	backward.send(p);
                             return 1;
                         }
-                        System.out.println("         **Receiver(1->0): ok data; replying ACK **");
+                        if (packet.seqnum.equals("0")) {
+                            System.out.println("         **Receiver(1->1): Duplicate 0 packet; discarding; replying ACK/0 **");
+                            p = new Packet("ACK", "0");
+                            backward.send(p);
+                            return 1;
+                        }
+                        System.out.println("         **Receiver(1->0): ok 1 data; replying ACK/1 **");
                         deliverToApp(packet.data);
                         p = new Packet("ACK", "1");
                         backward.send(p);
